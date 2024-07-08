@@ -1,13 +1,27 @@
-FROM java
+###########################################
+# BASE IMAGE
+###########################################
 
-WORKDIR /app
+FROM ubuntu AS build
 
-COPY . /app
+RUN apt-get update && apt-get install -y golang-go
 
-RUN npm install
+ENV GO111MODULE=off
 
-EXPOSE 80:80
+COPY . .
 
-CMD ["java", "test.json"]
+RUN CGO_ENABLED=0 go build -o /app .
+
+############################################
+# HERE STARTS THE MAGIC OF MULTI STAGE BUILD
+############################################
+
+FROM scratch
+
+# Copy the compiled binary from the build stage
+COPY --from=build /app /app
+
+# Set the entrypoint for the container to run the binary
+ENTRYPOINT ["/app"]
 
  
