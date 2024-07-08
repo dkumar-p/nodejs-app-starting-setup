@@ -1,27 +1,12 @@
-###########################################
-# BASE IMAGE
-###########################################
+FROM node:12
 
-FROM ubuntu AS build
+WORKDIR /app
 
-RUN apt-get update && apt-get install -y golang-go
+COPY . /app
 
-ENV GO111MODULE=off
+RUN npm install
 
-COPY . .
+EXPOSE 4500
 
-RUN CGO_ENABLED=0 go build -o /app .
-
-############################################
-# HERE STARTS THE MAGIC OF MULTI STAGE BUILD
-############################################
-
-FROM scratch
-
-# Copy the compiled binary from the build stage
-COPY --from=build /app /app
-
-# Set the entrypoint for the container to run the binary
-ENTRYPOINT ["/app"]
-
+CMD [ "node", "server.js" ]
  
